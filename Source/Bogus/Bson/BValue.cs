@@ -12,13 +12,17 @@ namespace Bogus.Bson;
 public class BValue
 {
    private BValueType valueType;
-   private Double _double;
-   private string _string;
-   private byte[] _binary;
-   private bool _bool;
-   private DateTime _dateTime;
-   private Int32 _int32;
-   private Int64 _int64;
+
+   /* BValue contains one value that can be of the following types:
+    * Int32
+    * Int64
+    * double
+    * string
+    * boolean
+    * DateTime
+    * Byte[]
+   */
+   private object value;
 
    public BValueType ValueType => valueType;
 
@@ -26,17 +30,10 @@ public class BValue
    {
       get
       {
-         switch( this.valueType )
-         {
-            case BValueType.Int32:
-               return _int32;
-            case BValueType.Int64:
-               return _int64;
-            case BValueType.Double:
-               return _double;
-            case BValueType.None:
-               return float.NaN;
-         }
+         if (value.GetType() == typeof(Double) || value.GetType() == typeof(Int32) || value.GetType() == typeof(Int64))
+            return (double) value;
+         if (value == null)
+            return float.NaN;
 
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to double");
       }
@@ -46,16 +43,8 @@ public class BValue
    {
       get
       {
-         switch( this.valueType )
-         {
-            case BValueType.Int32:
-               return _int32;
-            case BValueType.Int64:
-               return (Int32)_int64;
-            case BValueType.Double:
-               return (Int32)_double;
-         }
-
+         if (value.GetType() == typeof(Double) || value.GetType() == typeof(Int32) || value.GetType() == typeof(Int64))
+            return (Int32) value;
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to Int32");
       }
    }
@@ -64,16 +53,8 @@ public class BValue
    {
       get
       {
-         switch( this.valueType )
-         {
-            case BValueType.Int32:
-               return _int32;
-            case BValueType.Int64:
-               return _int64;
-            case BValueType.Double:
-               return (Int64)_double;
-         }
-
+         if (value.GetType() == typeof(Double) || value.GetType() == typeof(Int32) || value.GetType() == typeof(Int64))
+            return (Int64) value;
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to Int64");
       }
    }
@@ -82,12 +63,8 @@ public class BValue
    {
       get
       {
-         switch( valueType )
-         {
-            case BValueType.Binary:
-               return _binary;
-         }
-
+         if(value.GetType() == typeof(byte[]))
+            return (byte[]) value;
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to binary");
       }
    }
@@ -96,12 +73,8 @@ public class BValue
    {
       get
       {
-         switch( valueType )
-         {
-            case BValueType.UTCDateTime:
-               return _dateTime;
-         }
-
+         if (value.GetType() == typeof(DateTime))
+            return (DateTime) value;
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to DateTime");
       }
    }
@@ -110,20 +83,16 @@ public class BValue
    {
       get
       {
-         switch( valueType )
+         if (value.GetType() == typeof(Double) || value.GetType() == typeof(Int32) || value.GetType() == typeof(Int64))
+            return Convert.ToString(value);
+         else if(value.GetType() == typeof(String))
          {
-            case BValueType.Int32:
-               return Convert.ToString(_int32);
-            case BValueType.Int64:
-               return Convert.ToString(_int64);
-            case BValueType.Double:
-               return Convert.ToString(_double);
-            case BValueType.String:
-               return _string != null ? _string.TrimEnd((char)0) : null;
-            case BValueType.Binary:
-               return Encoding.UTF8.GetString(_binary).TrimEnd((char)0);
+            String s = (String) value;
+            return s != null ? s.TrimEnd((char)0) : null;
          }
-
+         else if(value.GetType() == typeof(Byte[]))
+            return Encoding.UTF8.GetString((Byte[]) value).TrimEnd((char)0);
+         
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to string");
       }
    }
@@ -132,12 +101,8 @@ public class BValue
    {
       get
       {
-         switch( valueType )
-         {
-            case BValueType.Boolean:
-               return _bool;
-         }
-
+         if(value.GetType() == typeof(bool))
+            return (bool) value;
          throw new Exception($"Original type is {this.valueType}. Cannot convert from {this.valueType} to bool");
       }
    }
@@ -199,43 +164,43 @@ public class BValue
    public BValue(double v)
    {
       this.valueType = BValueType.Double;
-      _double = v;
+      value = v;
    }
 
    public BValue(String v)
    {
       this.valueType = BValueType.String;
-      _string = v;
+      value = v;
    }
 
    public BValue(byte[] v)
    {
       this.valueType = BValueType.Binary;
-      _binary = v;
+      value = v;
    }
 
    public BValue(bool v)
    {
       this.valueType = BValueType.Boolean;
-      _bool = v;
+      value = v;
    }
 
    public BValue(DateTime dt)
    {
       this.valueType = BValueType.UTCDateTime;
-      _dateTime = dt;
+      value = dt;
    }
 
    public BValue(Int32 v)
    {
       this.valueType = BValueType.Int32;
-      _int32 = v;
+      value = v;
    }
 
    public BValue(Int64 v)
    {
       this.valueType = BValueType.Int64;
-      _int64 = v;
+      value = v;
    }
 
 
